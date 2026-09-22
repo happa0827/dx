@@ -35,6 +35,8 @@ if(mode){
   const verMatch = selfSrc.match(/[?&]v=([^&]+)/);
   const verQuery = verMatch ? ("?v=" + verMatch[1]) : "";
   const s = document.createElement("script");
+  /* ページ自体が CDN 絶対URLで開かれていれば相対パスで足りる。
+     file:// 直開き時も同じディレクトリ相対で engine を読む。 */
   s.src = (mode === "hard" ? "engine_hard.js" : "engine.js") + verQuery;
   document.body.appendChild(s);
 } else {
@@ -75,8 +77,14 @@ if(mode){
       <a class="modesel-back ui" href="../kokugo_app.html">← ホームに戻る</a>
     </div>`;
 
+  if (window.DxCompat) DxCompat.wireHomeLinks(modeRoot);
   modeRoot.querySelectorAll(".modesel-card[data-mode]").forEach(btn => {
-    btn.onclick = () => { location.href = location.pathname + "?mode=" + btn.dataset.mode; };
+    btn.onclick = () => {
+      /* dx_home を落としてしまうと、読了後の「ホーム」がランチャーに戻れない */
+      const next = new URLSearchParams(location.search);
+      next.set("mode", btn.dataset.mode);
+      location.href = location.pathname + "?" + next.toString();
+    };
   });
 }
 })();
