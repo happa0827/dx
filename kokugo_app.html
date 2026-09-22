@@ -12222,10 +12222,13 @@ const NOBIRU_CATS = [
    になり、タップしても何も起きない。公開を広げるときはこの配列にキーを足すだけでよい。 */
 const NOBIRU_ACTIVE_KEYS = ["ishigaki", "wakariyasusa", "seisuisho", "kanpeki"];
 function ddOpenNobiru(key){
-  /* file:// ランチャー時は相対 nobiru/ がホスト側に解決されて壊れるため、
-     __DX_CDN_BASE__（末尾スラッシュ）があれば CDN 絶対URLへ。未定義なら従来どおり。
-     CDN遷移時は dx_home に現在URLを付け、モード選択後も「ホームに戻る」で
-     ランチャーへ戻れるようにする（history.back 1回では足りない）。 */
+  /* file:// ランチャー時:
+     jsDelivr の .html は text/plain のため直接遷移するとソース表示になる。
+     dist/script.js が入れる __DX_OPEN_NOBIRU__（fetch→Blob text/html）を優先。 */
+  if (typeof window.__DX_OPEN_NOBIRU__ === "function") {
+    window.__DX_OPEN_NOBIRU__(key, {});
+    return;
+  }
   const base = window.__DX_CDN_BASE__;
   let url = (base || "") + "nobiru/" + key + ".html";
   if (base) {
