@@ -556,9 +556,26 @@ function boot(){
   window.addEventListener("resize", scheduleDemRedraw);
   $("b-fulltr").hidden = !hasTranslations;
   /* モードバッジ・モード切りかえリンク（この2つの要素を持つ教材HTMLだけに出る。
-     イージー／ハードを毎回選び直せることを示す）。 */
+     イージー／ハードを毎回選び直せることを示す）。
+     srcdoc では location.pathname が "srcdoc" になるため、href に載せない。 */
   if($("modeBadge")) $("modeBadge").textContent = "イージーモード";
-  if($("modeSwitch")) $("modeSwitch").href = location.pathname;
+  if($("modeSwitch")){
+    var modeSw = $("modeSwitch");
+    modeSw.setAttribute("href", "#");
+    modeSw.addEventListener("click", function(ev){
+      ev.preventDefault();
+      if(typeof window.__DX_OPEN_NOBIRU__ === "function" && window.__DX_NOBIRU_KEY__){
+        window.__DX_OPEN_NOBIRU__(window.__DX_NOBIRU_KEY__, {});
+        return;
+      }
+      var next = new URLSearchParams(location.search);
+      next.delete("mode");
+      var q = next.toString();
+      var path = location.pathname;
+      if(location.protocol === "about:" || path === "srcdoc" || path === "/srcdoc") return;
+      location.href = path + (q ? "?" + q : "");
+    });
+  }
   addXp(0);
   paintMarks();
   renderWordsList();
